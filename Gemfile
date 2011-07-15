@@ -1,8 +1,10 @@
 source 'http://rubygems.org'
 
+gem 'haml'
 gem 'rails', '3.0.9'
-gem 'sqlite3'
 gem 'ruby-debug19', :require => 'ruby-debug'
+gem 'sass'
+gem 'sqlite3'
 
 # Use unicorn as the web server
 # gem 'unicorn'
