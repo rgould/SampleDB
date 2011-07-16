@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+FILE = "sourcelist.txt"
+
+f = File.new(FILE, mode: 'r', internal_encoding: 'utf-8', external_encoding: 'iso-8859-1')
+while (line = f.gets)
+  puts "Line: #{line}"
+  case line
+  when /^\d+\.(.*)\[\d+ points?\]/
+    full_source = $1.strip
+    if full_source =~ /(.*)\w?\((.*)\)/
+      $source = $1.strip
+      $notes = $2.strip
+      puts "SOURCE: '#{$source}'"
+      puts "NOTES: '#{$notes}'"
+    else
+      $source = full_source
+      puts "SOURCE: #{$source}"
+    end
+  else
+    puts "UNMATCHED LINE: #{line}"
+  end
+end
