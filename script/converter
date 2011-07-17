@@ -2,6 +2,8 @@
 
 FILE = "sourcelist.txt"
 
+$samples = Array.new
+
 f = File.new(FILE, mode: 'r', internal_encoding: 'utf-8', external_encoding: 'iso-8859-1')
 while (line = f.gets)
   puts "Line: #{line}"
@@ -17,6 +19,24 @@ while (line = f.gets)
       $source = full_source
       puts "SOURCE: #{$source}"
     end
+  when /^[ ]{2}(\S.*)/
+    # two spaces = new sample
+    puts "NEW SAMPLE: #{$1.strip}"
+    $samples << $1.strip
+  when /^[ ]{3}(\S.*)/
+    # three spaces = continuation of previous sample
+    $samples[-1] += $1.strip
+    puts "FINISHED SAMPLE: #{$samples[-1]}"
+  when / {4}- (.*)/
+    $artist_attribution = $1.strip
+    puts "ATTRIBUTION: #{$artist_attribution}"
+  when / {6}(.*)/
+    #contiuation of artist attribution line
+    $artist_attribution += " " + $1.strip
+    puts "ATTRIBUTION CONTINUES: #{$artist_attribution}"
+  when /^\s*$/
+    # done this song
+    puts "END SAMPLE"
   else
     puts "UNMATCHED LINE: #{line}"
   end
