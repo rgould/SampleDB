@@ -1,25 +1,37 @@
 source 'http://rubygems.org'
 
+gem 'rails', '3.1.1'
+
+gem 'formtastic'
 gem 'haml'
-gem 'rails', '3.0.9'
-gem 'ruby-debug19', :require => 'ruby-debug'
-gem 'sass'
-gem 'sqlite3'
+gem 'heroku'
+gem 'pry'
+gem 'pry-git'
 
 group :development, :test do
+  gem 'sqlite3'
   gem 'rspec'
+  gem 'rspec-rails'
 end
 
-# Use unicorn as the web server
-# gem 'unicorn'
+group :production do
+  gem 'pg' # postgres for heroku
+  gem 'therubyracer-heroku'
+end
 
-# Deploy with Capistrano
-# gem 'capistrano'
+# Gems used only for assets and not required
+# in production environments by default.
+group :assets do
+  gem 'sass-rails',   '~> 3.1.4'
+  gem 'coffee-rails', '~> 3.1.1'
+  gem 'uglifier', '>= 1.0.3'
+end
 
+gem 'jquery-rails'
 
-# Bundle the extra gems:
-# gem 'bj'
-# gem 'nokogiri'
-# gem 'sqlite3-ruby', :require => 'sqlite3'
-# gem 'aws-s3', :require => 'aws/s3'
-
+group :test do
+  # Pretty printed test output
+  gem 'turn', :require => false
+  gem 'powder'
+  gem 'ruby-debug19', :require => 'ruby-debug'
+end
