@@ -10,6 +10,7 @@ while (line = f.gets)
   case line
   when /^\d+\.(.*)\[\d+ points?\]/
     full_source = $1.strip
+    3.times { puts "#"*40 }
     if full_source =~ /(.*)\w?\((.*)\)/
       $source = $1.strip
       $notes = $2.strip
@@ -21,6 +22,7 @@ while (line = f.gets)
     end
   when /^[ ]{2}(\S.*)/
     # two spaces = new sample
+    puts "!"*40
     puts "NEW SAMPLE: #{$1.strip}"
     $samples << $1.strip
   when /^[ ]{3}(\S.*)/
