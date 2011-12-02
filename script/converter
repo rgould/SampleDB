@@ -4,41 +4,99 @@ FILE = "sourcelist.txt"
 
 $samples = Array.new
 
+def new_sample
+  $samples = []
+end
+
+def finish_song
+  source = $source
+  notes = $notes
+  (artist, album, track_title) = $artist_attribution.split(';').map(&:strip)
+  attribution_notes = $attribution_note
+
+  puts "*"*50
+  puts "Source: #{source}, Notes: #{notes}"
+  puts "Artist: #{artist}"
+  puts "Album: #{album}"
+  puts "Track: #{track_title}"
+  $samples.each do |sample|
+    puts "Sample: #{sample}"
+  end
+end
+
+def debug(str)
+  #puts str
+end
+
 f = File.new(FILE, mode: 'r', internal_encoding: 'utf-8', external_encoding: 'iso-8859-1')
 while (line = f.gets)
-  puts "Line: #{line}"
+  #debug "Line: #{line}"
   case line
   when /^\d+\.(.*)\[\d+ points?\]/
+    # ex: 31. Clockwork Orange, A [120 points] (14 groups, 19 songs, 40 samples)
     full_source = $1.strip
-    3.times { puts "#"*40 }
+    3.times { debug "#"*40 }
     if full_source =~ /(.*)\w?\((.*)\)/
+      # ex: 35. Twin Peaks (TV Series) [107 points] (16 groups, 19 songs, 23 samples)
       $source = $1.strip
       $notes = $2.strip
-      puts "SOURCE: '#{$source}'"
-      puts "NOTES: '#{$notes}'"
+      debug "SOURCE: '#{$source}'"
+      debug "NOTES: '#{$notes}'"
     else
+      #ex 36. Abyss, The [106 points] (14 groups, 16 songs, 35 samples)
       $source = full_source
-      puts "SOURCE: #{$source}"
+      debug "SOURCE: #{$source}"
     end
-  when /^[ ]{2}(\S.*)/
+  when /^[ ]{2}([\[\(\"].*)/, /^\* ([\[\(\"].*)/
     # two spaces = new sample
-    puts "!"*40
-    puts "NEW SAMPLE: #{$1.strip}"
+    # ex:   "Two and a half miles straight down."
+    # ex:   "Everybody's dead!" @ 0:45 (Note: Spoken by actor John Bedford Lloyd)
+    # ex: * [electronic bleeps playing over Vangelis soundtrack] @ 0:00 (Note: Taken from
+    # (* means it was a new addition to the list)
+    debug "!"*40
+    debug "NEW SAMPLE: #{$1.strip}"
+    new_sample
     $samples << $1.strip
-  when /^[ ]{3}(\S.*)/
-    # three spaces = continuation of previous sample
-    $samples[-1] += $1.strip
-    puts "FINISHED SAMPLE: #{$samples[-1]}"
-  when / {4}- (.*)/
+  when / {4}- (.*)/ # must preceed the next case
+    #     - Circle of Dust; Course of Ruin; Brainchild
     $artist_attribution = $1.strip
-    puts "ATTRIBUTION: #{$artist_attribution}"
+    debug "ATTRIBUTION: #{$artist_attribution}"
+  when /^[ ]{3}(\S.*)/, /^[ ]{4}(\S.*)/, /^[ ]{2}([^ \[\(\"]\S.*)/
+    # three spaces = continuation of previous sample
+    # example:
+    #   "'Good luck.'
+    #    'Luck is not a factor.'" @ 0:55
+    # or:
+    # * [electronic bleeps playing over Vangelis soundtrack] @ 0:00 (Note: Taken from
+    #    the scene where Harrison Ford uses the ESPER machine to scan a photograph.
+    #    Sample is also used in "The Razor Girl Machine" on the same album.)
+    # or :
+    #   "'You reach down, you flip the tortoise over on its back Leon.'
+    #    'Do you make up these questions, Mr. Holden, or do they write them down
+    #     for you?'"
+    $samples[-1] += " " + $1.strip
+    debug "CONTINUED SAMPLE: #{$samples[-1]}"
+  when / {4}\(Note: (.*)\)?/
+    # note for attribution line
+    # example:
+    #     - Cat Rapes Dog; Schizo; Maximum Overdrive
+    #     (Note: * = Original mix, ** = Schizophrenia Remix found on the
+    #      Trans-Europa Collection for example)
+    $attribution_note = $1.strip
+  when / {5}(.*)\)?/
+    # continuation of note for attribution line
+    $attribution_note += " " + $1.strip
   when / {6}(.*)/
-    #contiuation of artist attribution line
+    # contiuation of artist attribution line
+    # example:
+    #     - DJ Hellhound; Bash Your Brains In;
+    #       Trauma - What's Going AUM? (Compilation)
     $artist_attribution += " " + $1.strip
-    puts "ATTRIBUTION CONTINUES: #{$artist_attribution}"
+    debug "ATTRIBUTION CONTINUES: #{$artist_attribution}"
   when /^\s*$/
     # done this song
-    puts "END SAMPLE"
+    debug "DONE SONG"
+    finish_song
   else
     puts "UNMATCHED LINE: #{line}"
   end
